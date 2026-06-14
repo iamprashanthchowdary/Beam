@@ -1,9 +1,16 @@
 use std::fs::File;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+use qrcode::{render::unicode, QrCode};
 
 const ADDRESS: &str = "0.0.0.0";
 const PORT: u16 = 7177;
+
+fn generate_qr_code(data: &str) -> String {
+    let qr_code = QrCode::new(data).unwrap();
+    let qr_code = qr_code.render::<unicode::Dense1x2>().build();
+    qr_code
+}
 
 fn get_file_path() -> String {
    // need to get a file path here 
