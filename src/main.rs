@@ -9,6 +9,7 @@ use std::process;
 const ADDRESS: &str = "0.0.0.0";
 const PORT: u16 = 7177;
 
+//user this func to generate a QR code from a URL
 fn generate_qr_code(data: &str) -> String {
     let qr_code = QrCode::new(data).unwrap();
     let qr_code = qr_code.render::<unicode::Dense1x2>().build();
