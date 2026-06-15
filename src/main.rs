@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use qrcode::{render::unicode, QrCode};
+use std::process;
+
 
 const ADDRESS: &str = "0.0.0.0";
 const PORT: u16 = 7177;
@@ -14,7 +16,16 @@ fn generate_qr_code(data: &str) -> String {
 
 fn get_file_path() -> String {
    // need to get a file path here 
-   return "~/Desktop/test.txt".to_string();
+   let args: Vec<String> = std::env::args().collect();
+      let path = match args.get(1) {
+          Some(p) => p,
+          None => {
+              eprintln!("No file path provided");
+              process::exit(1);
+          }
+      };
+      println!("{:?}", &args);
+   return path.to_string();
 }
 
 fn handle_connection(mut stream: TcpStream) {
@@ -30,8 +41,9 @@ fn handle_connection(mut stream: TcpStream) {
         "HTTP/1.1 200 OK\r\n\
         Content-Length: {}\r\n\
         Content-Type: application/pdf\r\n\
-        Content-Disposition: attachment; filename='test.txt'\r\n\r\n",
-        file.metadata().unwrap().len()
+        Content-Disposition: attachment; filename='{:?}'\r\n\r\n",
+        file.metadata().unwrap().len(),
+        file
     );
     let mut stream = stream;
     stream.write_all(header.as_bytes()).unwrap();
@@ -46,7 +58,7 @@ fn handle_connection(mut stream: TcpStream) {
 }
 
 fn main() {
-    let listener = TcpListener::bind(format!("{}:{}", ADDRESS, PORT)).unwrap();
+   let listener = TcpListener::bind(format!("{}:{}", ADDRESS, PORT)).unwrap();
     println!("SERVER LISTING ON.... {}:{}", ADDRESS, PORT);
     for stream in listener.incoming() {
         match stream {
