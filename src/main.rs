@@ -5,6 +5,7 @@ use qrcode::{render::unicode, QrCode};
 use std::process;
 
 
+
 const ADDRESS: &str = "0.0.0.0";
 const PORT: u16 = 7177;
 
@@ -34,16 +35,19 @@ fn handle_connection(mut stream: TcpStream) {
     let data = &buffer[..bytes_read];
     println!("Received: {}", String::from_utf8_lossy(data));
 
-    let mut file = File::open(get_file_path()).unwrap();
+    let file_path = get_file_path();
+    let mut file = File::open(&file_path).unwrap();
     let mut file_buff = [0u8; 1024];
-    
+     
+    let file_name = std::path::Path::new(&file_path).file_name().and_then(|n| n.to_str()).unwrap_or("file_via_beam");
+    let file_size = file.metadata().unwrap().len();
+    println!("file_name: {}", file_name);
     let header = format!(
         "HTTP/1.1 200 OK\r\n\
         Content-Length: {}\r\n\
         Content-Type: application/pdf\r\n\
-        Content-Disposition: attachment; filename='{:?}'\r\n\r\n",
-        file.metadata().unwrap().len(),
-        file
+        Content-Disposition: attachment; filename={}\r\n\r\n",
+        file_size, file_name
     );
     let mut stream = stream;
     stream.write_all(header.as_bytes()).unwrap();
